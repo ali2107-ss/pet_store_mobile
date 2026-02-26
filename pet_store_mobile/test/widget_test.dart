@@ -11,20 +11,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_store_mobile/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('HomeScreen displays categories smoke test',
+      (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that the AppBar title is correct.
+    expect(find.text('Зоомагазин "Пушистик"'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the category header is displayed.
+    expect(find.text('Наши категории'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that at least one category is displayed.
+    expect(find.text('Собаки'), findsOneWidget);
   });
 }
