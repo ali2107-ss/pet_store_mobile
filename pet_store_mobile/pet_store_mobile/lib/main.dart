@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/auth_screen.dart';
+
+// --- 1. Создаем простую модель данных для категорий ---
+class PetCategory {
+  final String name;
+  final IconData icon;
+
+  const PetCategory({required this.name, required this.icon});
+}
+
+// --- 2. Список наших категорий ---
+final List<PetCategory> categories = [
+  const PetCategory(name: 'Собаки', icon: Icons.pets),
+  const PetCategory(name: 'Кошки', icon: Icons.cruelty_free),
+  const PetCategory(name: 'Рыбки', icon: Icons.set_meal),
+  const PetCategory(name: 'Птицы', icon: Icons.flutter_dash),
+  const PetCategory(name: 'Грызуны', icon: Icons.mouse),
+  const PetCategory(name: 'Аксессуары', icon: Icons.shopping_basket),
+];
 
 void main() {
   runApp(const MyApp());
@@ -15,87 +30,125 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Pet Store',
       theme: ThemeData(
+        // --- 3. Обновляем тему для более приятного вида ---
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6B4CE6),
-          brightness: Brightness.light,
+          seedColor: Colors.brown,
+          primary: Colors.brown[600],
+          secondary: Colors.amber[700],
+          background: Colors.grey[100],
         ),
         useMaterial3: true,
-      ),
-      home: const MainApp(),
-    );
-  }
-}
-
-class MainApp extends StatefulWidget {
-  const MainApp({super.key});
-
-  @override
-  State<MainApp> createState() => _MainAppState();
-}
-
-class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 0;
-  bool _isLoggedIn = false;
-
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const ProfileScreen(),
-  ];
-
-  void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _showAuthSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        expand: false,
-        builder: (context, scrollController) => AuthScreen(
-          scrollController: scrollController,
-          onSuccess: () {
-            setState(() {
-              _isLoggedIn = true;
-            });
-            Navigator.pop(context);
-          },
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.brown[600],
+          foregroundColor: Colors.white,
+        ),
+        cardTheme: CardTheme(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
+      home: const HomeScreen(), // --- 4. Меняем стартовый экран ---
     );
   }
+}
+
+// --- 5. Новый главный экран ---
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoggedIn ? _screens[_selectedIndex] : const HomeScreen(),
-      bottomNavigationBar: _isLoggedIn
-          ? NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: _onNavItemTapped,
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
+      appBar: AppBar(
+        title: const Text('Зоомагазин "Пушистик"'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart_outlined),
+            tooltip: 'Корзина',
+            onPressed: () {
+              // TODO: Реализовать переход в корзину
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Наши категории',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            // --- 6. Используем GridView для отображения разделов ---
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // Две колонки
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.2, // Соотношение сторон карточки
                 ),
-                NavigationDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-            )
-          : null,
-      floatingActionButton: Visibility(
-        visible: !_isLoggedIn,
-        child: FloatingActionButton.extended(
-          onPressed: _showAuthSheet,
-          icon: const Icon(Icons.login),
-          label: const Text('Sign In'),
-          backgroundColor: const Color(0xFF6B4CE6),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return CategoryCard(category: category);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 7. Отдельный виджет для карточки категории ---
+class CategoryCard extends StatelessWidget {
+  const CategoryCard({
+    super.key,
+    required this.category,
+  });
+
+  final PetCategory category;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias, // чтобы InkWell не выходил за скругленные углы
+      child: InkWell(
+        onTap: () {
+          // TODO: Реализовать переход на экран списка товаров для этой категории
+          print('Нажата категория: ${category.name}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Вы выбрали категорию: ${category.name}'),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              category.icon,
+              size: 48,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              category.name,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
